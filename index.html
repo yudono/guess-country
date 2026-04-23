@@ -1,1 +1,329 @@
-Guess Country
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hot-Cold Geography</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              display: ['"Space Grotesk"', "sans-serif"],
+              body: ['"DM Sans"', "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="bg-grid"></div>
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+
+    <div class="relative z-10 min-h-screen flex flex-col">
+      <!-- Header -->
+      <header
+        class="px-4 sm:px-6 py-4 flex items-center justify-between border-b"
+        style="border-color: var(--border)"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="w-9 h-9 rounded-lg flex items-center justify-center"
+            style="
+              background: linear-gradient(
+                135deg,
+                var(--very-hot),
+                var(--accent)
+              );
+            "
+          >
+            <i class="fa-solid fa-earth-americas text-white text-sm"></i>
+          </div>
+          <div>
+            <h1
+              class="font-display font-bold text-base sm:text-lg leading-tight"
+              style="color: var(--fg)"
+            >
+              Hot-Cold Geography
+            </h1>
+            <p class="text-xs hidden sm:block" style="color: var(--muted)">
+              Guess the hidden country
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            class="mode-btn active"
+            id="btnUnlimited"
+            onclick="setMode('unlimited')"
+          >
+            Unlimited
+          </button>
+          <button class="mode-btn" id="btnDaily" onclick="setMode('daily')">
+            Daily
+          </button>
+          <button
+            class="btn-ghost"
+            onclick="showHowToPlay()"
+            aria-label="How to play"
+          >
+            <i class="fa-solid fa-circle-question"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main -->
+      <main class="flex-1 max-w-2xl mx-auto w-full px-4 sm:px-6 py-6">
+        <!-- Game info -->
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-4">
+            <span
+              class="font-display font-semibold text-sm"
+              style="color: var(--fg-dim)"
+            >
+              <i
+                class="fa-solid fa-location-crosshairs mr-1"
+                style="color: var(--accent)"
+              ></i>
+              Guess <span id="guessCount" class="text-white">0</span
+              ><span id="guessLimit" style="color: var(--muted)"> / 6</span>
+            </span>
+            <span
+              id="modeLabel"
+              class="text-xs px-2 py-1 rounded-md font-display font-medium"
+              style="
+                background: var(--card);
+                color: var(--muted);
+                border: 1px solid var(--border);
+              "
+              >Unlimited</span
+            >
+          </div>
+          <button class="btn-ghost text-xs" onclick="resetGame()">
+            <i class="fa-solid fa-rotate-right mr-1"></i>New Game
+          </button>
+        </div>
+
+        <!-- Proximity bar -->
+        <div class="mb-5">
+          <div
+            class="flex justify-between text-xs mb-1.5"
+            style="color: var(--muted)"
+          >
+            <span>Freezing</span>
+            <span>On Fire</span>
+          </div>
+          <div class="proximity-track">
+            <div
+              class="proximity-fill"
+              id="proximityFill"
+              style="width: 0%"
+            ></div>
+            <div
+              class="proximity-marker"
+              id="proximityMarker"
+              style="left: 0%"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Input area -->
+        <div class="relative mb-6" id="inputArea">
+          <input
+            type="text"
+            class="game-input pr-24"
+            id="guessInput"
+            placeholder="Type a country name..."
+            autocomplete="off"
+            aria-label="Country guess input"
+          />
+          <button
+            class="btn btn-primary absolute right-2 top-1/2 -translate-y-1/2"
+            id="submitBtn"
+            onclick="submitGuess()"
+            style="padding: 8px 18px; font-size: 0.9rem"
+          >
+            Guess <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+          <div class="autocomplete" id="autocomplete" role="listbox"></div>
+        </div>
+
+        <!-- Guess history -->
+        <div id="guessHistory" class="space-y-2"></div>
+
+        <!-- Empty state -->
+        <div id="emptyState" class="text-center py-16">
+          <div class="text-5xl mb-4 opacity-20">
+            <i class="fa-solid fa-globe"></i>
+          </div>
+          <p
+            class="font-display font-medium text-lg mb-1"
+            style="color: var(--fg-dim)"
+          >
+            No guesses yet
+          </p>
+          <p class="text-sm" style="color: var(--muted)">
+            Type a country name to get started. Use the temperature and
+            direction hints to narrow it down.
+          </p>
+        </div>
+      </main>
+    </div>
+
+    <!-- Win Modal -->
+    <div class="modal-overlay" id="winModal">
+      <div class="modal-content">
+        <div class="text-4xl mb-3" id="winEmoji" style="color: var(--very-hot)">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h2
+          class="font-display font-bold text-2xl mb-1"
+          id="winTitle"
+          style="color: var(--fg)"
+        >
+          You found it!
+        </h2>
+        <p class="text-sm mb-5" style="color: var(--muted)" id="winSubtitle">
+          Great geographic intuition
+        </p>
+        <div class="flex gap-3 mb-5" id="winStats"></div>
+        <div class="flex gap-2 mb-4">
+          <button
+            class="btn btn-primary flex-1"
+            onclick="
+              resetGame();
+              closeModal('winModal');
+            "
+          >
+            <i class="fa-solid fa-rotate-right"></i>Play Again
+          </button>
+          <button
+            class="btn btn-secondary"
+            onclick="shareResult()"
+            id="shareBtn"
+          >
+            <i class="fa-solid fa-share-nodes"></i>Share
+          </button>
+        </div>
+        <div class="share-box hidden" id="shareBox"></div>
+      </div>
+    </div>
+
+    <!-- Lose Modal -->
+    <div class="modal-overlay" id="loseModal">
+      <div class="modal-content">
+        <div class="text-4xl mb-3" style="color: var(--cold)">
+          <i class="fa-solid fa-map-location-dot"></i>
+        </div>
+        <h2
+          class="font-display font-bold text-2xl mb-1"
+          style="color: var(--fg)"
+        >
+          Not this time
+        </h2>
+        <p class="text-sm mb-5" style="color: var(--muted)" id="loseText">
+          The country was...
+        </p>
+        <div class="stat-card mb-5" style="background: var(--card-hover)">
+          <p
+            class="font-display font-bold text-xl"
+            id="loseCountry"
+            style="color: var(--accent)"
+          ></p>
+        </div>
+        <button
+          class="btn btn-primary w-full"
+          onclick="
+            resetGame();
+            closeModal('loseModal');
+          "
+        >
+          <i class="fa-solid fa-rotate-right"></i>Try Again
+        </button>
+      </div>
+    </div>
+
+    <!-- How To Play Modal -->
+    <div class="modal-overlay" id="howToPlayModal">
+      <div class="modal-content" style="text-align: left">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-display font-bold text-xl" style="color: var(--fg)">
+            How to Play
+          </h2>
+          <button
+            class="btn-ghost"
+            onclick="closeModal('howToPlayModal')"
+            aria-label="Close"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div
+          class="space-y-3 text-sm"
+          style="color: var(--fg-dim); line-height: 1.7"
+        >
+          <p>
+            <strong style="color: var(--fg)">A secret country</strong> is chosen
+            at random. Your job is to guess which one.
+          </p>
+          <p>After each guess, you get two clues:</p>
+          <div class="flex items-start gap-3 pl-2">
+            <span
+              class="direction-arrow flex-shrink-0"
+              style="
+                width: 32px;
+                height: 32px;
+                font-size: 1rem;
+                margin-top: 2px;
+              "
+              >↑</span
+            >
+            <span
+              ><strong style="color: var(--fg)">Direction</strong> — an arrow
+              pointing from your guess toward the target country.</span
+            >
+          </div>
+          <div class="flex items-start gap-3 pl-2">
+            <span
+              class="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 rounded text-xs font-bold mt-0.5"
+              style="background: rgba(255, 107, 53, 0.2); color: var(--accent)"
+              >H</span
+            >
+            <span
+              ><strong style="color: var(--fg)">Temperature</strong> — how close
+              you are. From "Freezing" (far) to "On Fire" (very close).</span
+            >
+          </div>
+          <p>
+            The <strong style="color: var(--fg)">proximity bar</strong> at the
+            top fills up as you get warmer.
+          </p>
+          <p>
+            In <strong style="color: var(--fg)">Unlimited</strong> mode, guess
+            as many times as you want. In
+            <strong style="color: var(--fg)">Daily</strong> mode, you get 6
+            guesses — same country for everyone.
+          </p>
+          <p>Share your results with friends and compare scores!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
