@@ -715,6 +715,7 @@ async function shareResult() {
         historyEmojis += emoji;
     }
     text += '\n' + (gameMode === 'daily' ? '#HotColdGeoDaily' : '#HotColdGeography');
+    text += '\n👉 https://guess-country.yudonoputro.com/';
 
     // 2. Prepare Snapshot Template
     document.getElementById('snapshotMode').textContent = gameMode === 'daily' ? 'Daily Challenge' : 'Unlimited Mode';
