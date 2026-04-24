@@ -26,6 +26,7 @@
       };
     </script>
     <link rel="stylesheet" href="style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   </head>
   <body>
     <div class="bg-grid"></div>
@@ -323,6 +324,50 @@
 
     <!-- Toast -->
     <div class="toast" id="toast"></div>
+
+    <!-- Hidden Snapshot Template for Sharing -->
+    <div
+      id="snapshotContainer"
+      style="position: absolute; left: -9999px; top: -9999px"
+    >
+      <div id="shareSnapshot" class="snapshot-card">
+        <div class="snapshot-header">
+          <div class="snapshot-icon">
+            <i class="fa-solid fa-earth-americas"></i>
+          </div>
+          <div class="snapshot-brand">
+            <h2>Hot-Cold Geography</h2>
+            <p id="snapshotMode">Daily Challenge</p>
+          </div>
+        </div>
+
+        <div class="snapshot-body">
+          <div class="snapshot-status" id="snapshotStatus">
+            MISSION ACCOMPLISHED
+          </div>
+          <div class="snapshot-country" id="snapshotCountry">INDONESIA</div>
+
+          <div class="snapshot-stats">
+            <div class="snap-stat">
+              <span class="snap-val" id="snapGuesses">4</span>
+              <span class="snap-lab">Guesses</span>
+            </div>
+            <div class="snap-stat">
+              <span class="snap-val" id="snapScore">750</span>
+              <span class="snap-lab">Score</span>
+            </div>
+          </div>
+
+          <div class="snapshot-history" id="snapshotHistory">
+            <!-- Row of emojis representing guesses -->
+          </div>
+        </div>
+
+        <div class="snapshot-footer">
+          <span>play hot-cold-geo.com</span>
+        </div>
+      </div>
+    </div>
 
     <script src="script.js"></script>
   </body>
